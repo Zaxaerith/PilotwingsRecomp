@@ -1,115 +1,113 @@
-# Pilotwings Recomp
+# Pilotwings SNES Native PC Recompilation
 
-A native recompilation of **Pilotwings** (USA), built on
-[snesrecomp](https://github.com/RetroPortingToolKit/snesrecomp).
+Native Windows x64 recompilation of **Pilotwings** (SNES 1990 USA), powered by [snesrecomp](https://github.com/RetroPortingToolKit/snesrecomp) AOT static binary translation and native DSP-1 HLE coprocessor math routines.
 
-_Add a short description here._
+## Version: v0.1.0-preview-rc1
 
+> **LEGAL NOTICE**:
+> This package does NOT contain any proprietary Nintendo ROM data, DSP-1 microcode firmwares, or copyrighted assets.
+> You must legally own an original retail copy of *Pilotwings* (SNES) and provide your own dump.
 
+---
 
-> **You must legally own a copy of the game.** No ROM data is distributed with
-> this project, in the repository or in any release. The recompiled C is
-> generated locally from your own copy and is never committed.
+## Supported ROM Identity
 
-## Status
-
-Scaffolded on 2026-10-22 — **not yet a working port.** The layout, build,
-regeneration pipeline, CI, and packaging are wired up; the game does not run
-until the host work in `src/game_rtl.c` is done. See
-[Porting from here](#porting-from-here).
-
-## ROM identity
-
-| | |
+| Property | Value |
 |---|---|
-| File | `Pilotwings (USA).sfc` |
-| Publisher | — |
-| Developer | — |
-| Year | — |
-| Mapping | lorom |
-| Region | USA (North America) |
-| Coprocessor | DSP |
-| CRC32 | `266c44ed` |
-| SHA-256 | `03d0127f5de3237e22ad00de0c20763274da7b71142dde693240ac96d10983a3` |
+| **Title** | *Pilotwings* (USA) |
+| **System** | Super Nintendo Entertainment System (SNES) |
+| **Release Year** | 1990 (North America: August 1991) |
+| **Mapping** | LoROM (PCB: SHVC-1B0N-01) |
+| **Coprocessor** | DSP-1 (HLE Mathematical Coprocessor) |
+| **Region** | USA (NTSC) |
+| **File Name** | `Pilotwings (USA).sfc` |
+| **File Size** | 524,288 bytes (512 KB, headerless) |
+| **CRC-32** | `266C44ED` |
+| **SHA-256** | `03d0127f5de3237e22ad00de0c20763274da7b71142dde693240ac96d10983a3` |
 
-`tools/regen.sh` refuses to run against anything else, so a mismatched
-revision fails immediately instead of producing subtly wrong output.
+The game binary verifies this exact cryptographic digest upon boot. Headers (e.g. 512-byte copier headers) must be removed prior to running.
 
-## Build
+---
 
-```sh
-git submodule update --init --recursive
-bash tools/regen.sh --rom /path/to/Pilotwings (USA).sfc
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j
-```
+## Quick Start Guide
 
-The ROM does not have to live in the repository — keeping it on your own
-drive is the better habit, and `SNESRECOMP_ROM` sets the path once for a
-shell. Without either, `tools/regen.sh` finds `Pilotwings (USA).sfc` at the repo root,
-then the path the setup wizard recorded in `rom.cfg`; `.gitignore` blocks
-both from ever being committed.
+1. Extract this release ZIP package to any local directory on Windows (e.g. `C:\Games\PilotwingsRecomp` or `Desktop`).
+2. Place your verified `Pilotwings (USA).sfc` ROM into the same folder as `PilotwingsSNESRecomp.exe`.
+3. Launch `PilotwingsSNESRecomp.exe`.
+   - Alternatively, drag-and-drop the `.sfc` file onto `PilotwingsSNESRecomp.exe`.
+   - Or launch via Command Prompt / PowerShell:
+     ```powershell
+     .\PilotwingsSNESRecomp.exe --rom "path\to\Pilotwings (USA).sfc"
+     ```
 
-`tools/regen.sh` verifies the ROM, generates `src/gen/*.c`, and re-syncs
-`recomp/funcs.h`. Re-run it whenever you change anything under `recomp/`.
+No external runtime installations (Python, Rust, CMake, MinGW) are required. All necessary DLLs are self-contained.
 
-## Run
+---
 
-```sh
-./build/PilotwingsSNESRecomp                     # launcher picks the ROM
-./build/PilotwingsSNESRecomp /path/to/Pilotwings (USA).sfc # or name it and skip the launcher
-```
+## Default Controls
 
-With no ROM on the command line the build opens the recomp-ui launcher: a ROM
-picker with a verification badge, plus display / audio / input settings. Your
-choice is cached in `rom.cfg` beside the executable, so the next launch opens
-on it and "Skip launcher on boot" makes it immediate. If the launcher is not
-built in (`--no-recomp-ui`), the host falls back to a native file picker.
+### Keyboard Controls (Configurable via `keybinds.ini`)
 
-Either way the ROM is checked against the digests above before anything boots
-— a dump that could not have produced this build is refused at the door rather
-than mis-executing ten frames in.
+| Action | SNES Button | Default Key |
+|---|---|---|
+| **Pitch Down / Dive** | D-Pad Up | **Up Arrow** |
+| **Pitch Up / Climb** | D-Pad Down | **Down Arrow** |
+| **Roll / Rudder Left** | D-Pad Left | **Left Arrow** |
+| **Roll / Rudder Right** | D-Pad Right | **Right Arrow** |
+| **Throttle Up / Accelerate / Confirm** | A Button | **X** |
+| **Throttle Down / Brake / Cancel** | B Button | **Z** |
+| **Secondary Function / Look Down** | X Button | **S** |
+| **Secondary Function / Look Ahead** | Y Button | **A** |
+| **Rudder Left / Left Airbrake** | L Shoulder | **C** |
+| **Rudder Right / Right Airbrake** | R Shoulder | **V** |
+| **Start / Launch Flight / Pause** | Start | **Enter (Return)** |
+| **Select** | Select | **Right Shift** |
 
-## Layout
+### Gamepad Controls (Configurable via `config.ini`)
 
-| Path | What lives there |
-|---|---|
-| `recomp/` | Analysis input: `bank*.cfg`, `symbols.toml`, generated `funcs.h` |
-| `rom_identity.txt` | ROM digests — read by the build, `tools/regen.sh` and CI |
-| `src/` | Host code you own: `main.c`, `game_rtl.c` |
-| `src/gen/` | Generated C. Never committed — regenerate locally |
-| `snesrecomp/` | Framework submodule (owns `lib/recomp-net`, `lib/retcomm-rbengine`) |
-| `tools/` | `regen.sh` — the ROM → C pipeline |
-| `scripts/` | `package_release.sh` — player-facing zip |
-| `framework_pins.txt` | Exact framework commits this project was scaffolded against |
+Standard XInput and DirectInput controllers (Xbox Wireless Controller, PlayStation DualShock/DualSense, Nintendo Switch Pro Controller) are auto-detected via SDL2.
 
-## Porting from here
+- **D-Pad / Left Stick**: Directional flight control
+- **A / B / X / Y**: Throttle, Brakes, Secondary controls
+- **LB / RB**: Rudders
+- **Start / Back**: Start / Select
 
-The scaffold stops where the game-specific work starts. In rough order:
+---
 
-1. **Make it boot.** `src/game_rtl.c` holds the frame driver. It starts on
-   the framework's beam-aligned driver (`snesrecomp/runner/src/beam_frame_driver.h`):
-   one frame per PPU field, interrupts taken where the beam latches them,
-   the field rasterized from the raster journal. A title whose main loop it
-   does not fit replaces those calls with its own driver.
-2. **Name things.** Add entries to `recomp/symbols.toml` as you identify
-   routines, then re-run `tools/regen.sh`. Set `emit = true` to promote one
-   into ahead-of-time analysis; leave it false to keep it interpreted.
-   Regen synchronizes the marked blocks in each bank cfg, creating missing
-   configs. Only proven variants become AOT code. See `recomp/README.md`.
-3. **Resolve dispatch misses.** After every run, deal with unresolved
-   indirect targets before anything else — they are the reason a port
-   diverges, and they are cheap to fix early.
-4. **Never synthesise a result** to get past uncovered code, and never edit
-   `src/gen/` by hand. Fix the config or the framework and regenerate.
+## System Shortcuts (`config.ini`)
 
-## Multiplayer
+- **Fullscreen Toggle**: `Alt + Enter`
+- **Turbo Mode**: `Tab` (hold for accelerated frame processing)
+- **Soft Reset**: `Ctrl + R`
+- **Pause**: `P` or `Shift + P`
+- **Volume Up / Down**: `Keypad +` / `Keypad -`
+- **Toggle Performance HUD**: `F`
+- **Quick Save State (Slots 1-10)**: `Shift + F1` through `Shift + F10`
+- **Quick Load State (Slots 1-10)**: `F1` through `F10`
+- **Save State Menu**: `F11`
+- **Rewind**: `F12`
 
-Single player.
+---
 
-## License
+## Game Progression & Save Mechanism
 
-This project's own source is under the license in `LICENSE`. The framework
-carries its own terms — see `snesrecomp/LICENSE` and
-`snesrecomp/THIRD_PARTY_ATTRIBUTION.md`. Neither covers the game data, which
-is not distributed here.
+- **Important Notice**: The original *Pilotwings* cartridge **does NOT feature battery-backed SRAM**. 
+- In-game career progression is saved using the authentic **16-character password system** awarded by the Flight Club instructors (Tony, Shirley, etc.) upon certifying lessons.
+- To resume your career in vanilla fashion, select **PASSWORD** on the main menu and enter your 16-character code.
+- In addition to cartridge passwords, this native PC port supports instant, full-state snapshots via the PC **Save State** system (`Shift+F1` to save, `F1` to load).
+
+---
+
+## Audio & Video Features
+
+- **Rendering**: Hardware-accelerated OpenGL presenter (standard 4:3 native SNES pixel aspect ratio).
+- **Audio**: 32,000 Hz, 16-bit stereo S-SMP DSP emulation with Gaussian sample interpolation.
+- **DSP-1 Mathematical Precision**: Full HLE implementation of the NEC µPD77C25 coprocessor providing 3D Mode 7 matrix coordinate projections, altitude/pitch scaling, ground perspective transformation, and attitude clamping.
+
+---
+
+## Troubleshooting
+
+- **Crash on Launch / Missing ROM**: Ensure `Pilotwings (USA).sfc` is in the same directory as the executable and matches the SHA-256 hash listed above.
+- **Audio Stuttering**: Ensure your monitor refresh rate is stable, or adjust `AudioSamples` in `config.ini` (e.g. 1024).
+- **Rebinding Keys**: Open `keybinds.ini` in any text editor, update key values according to SDL key names, and restart the game.

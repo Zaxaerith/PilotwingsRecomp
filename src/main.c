@@ -53,15 +53,34 @@ static const SnesDesktopHostGame kGameHost = {
     .build_version       = SNES_GAME_VERSION,
     .game_info           = &kGameInfo,
     .num_players         = 1,
-    /* Battery-backed SRAM shows the launcher's SAVES panel. Leave NULL for a
-     * title without one. The path is exe-relative. */
-    .sram_path           = "saves/save.srm",
+    /* Pilotwings uses a 16-character password system rather than battery-backed SRAM. */
+    .sram_path           = NULL,
 };
+
+#ifdef _WIN32
+#include <windows.h>
+static void flush_stdio(void)
+{
+    fflush(stdout);
+    fflush(stderr);
+}
+#endif
 
 #ifndef __ANDROID__
 #undef main   /* desktop: keep plain main() even if SDL_main.h remapped it */
 #endif
 int main(int argc, char **argv)
 {
-    return snesrecomp_desktop_main(&kGameHost, argc, argv);
+#ifdef _WIN32
+    if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+        freopen("CONOUT$", "w", stdout);
+        freopen("CONOUT$", "w", stderr);
+    }
+    atexit(flush_stdio);
+#endif
+    int ret = snesrecomp_desktop_main(&kGameHost, argc, argv);
+#ifdef _WIN32
+    flush_stdio();
+#endif
+    return ret;
 }
