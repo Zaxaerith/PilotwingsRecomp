@@ -20,12 +20,22 @@ if(SNESRECOMP_BUILD_VERSION STREQUAL "")
     endif()
 endif()
 
-set(SNESRECOMP_ROOT "${CMAKE_SOURCE_DIR}/snesrecomp" CACHE PATH
-    "Path to the snesrecomp checkout used by this game")
+if(NOT DEFINED SNESRECOMP_ROOT)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/snesrecomp/runner/runner.cmake")
+        set(SNESRECOMP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/snesrecomp" CACHE PATH
+            "Path to the snesrecomp checkout used by this game")
+    elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../snesrecomp-main/runner/runner.cmake")
+        set(SNESRECOMP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../snesrecomp-main" CACHE PATH
+            "Path to the snesrecomp checkout used by this game")
+    else()
+        set(SNESRECOMP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/snesrecomp" CACHE PATH
+            "Path to the snesrecomp checkout used by this game")
+    endif()
+endif()
 if(NOT EXISTS "${SNESRECOMP_ROOT}/runner/runner.cmake")
     message(FATAL_ERROR
-        "snesrecomp submodule missing at ${SNESRECOMP_ROOT}.\n"
-        "Run: git submodule update --init --recursive")
+        "snesrecomp missing at ${SNESRECOMP_ROOT}.\n"
+        "Run: git submodule update --init --recursive or pass -DSNESRECOMP_ROOT=<path>")
 endif()
 # Mod packages are part of every project, not an option. The launcher's Mods
 # page, the .snesmod loader, the trusted-plugin registry and netplay's mod-set

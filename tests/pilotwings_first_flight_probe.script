@@ -1,0 +1,39 @@
+# Full flight probe script
+# 1. Boot to title
+wait 220
+press start 5
+
+# 2. Title to password prompt
+wait 120
+press start 5
+
+# 3. Wait for password prompt to finish
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+# 4. Wait for Tony's briefing to finish (~frame 1000)
+wait 200
+# Advance dialogue
+press a 5
+wait 60
+press start 5
+wait 60
+# Confirm Lesson 1 / Event 1 (Light Plane)
+press a 5
+wait 60
+press start 5
+wait 120
+# Flight scene should be loading/running here
+# Apply throttle (A)
+press a 60
+wait 30
+# Pitch / roll control
+press right 30
+wait 30
+press down 30
+wait 60
+quit

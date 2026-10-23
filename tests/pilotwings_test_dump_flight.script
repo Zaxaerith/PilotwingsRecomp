@@ -1,0 +1,64 @@
+# Test dumping full PPU and VRAM state during flight scene
+wait 220
+press start 5
+
+wait 120
+press start 5
+
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 120
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 150
+press a 120
+
+wait 60
+press start 10
+wait 60
+press start 10
+
+wait 120
+press start 10
+wait 60
+press a 10
+wait 60
+
+# Dump state at frame ~2450
+dump flight_state_2450
+
+press a 120
+dump flight_state_2570
+quit

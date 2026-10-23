@@ -1,0 +1,10 @@
+# Pilotwings Menu Navigation Script
+# Stage 1: Boot through intro, press Start to enter Title screen
+wait 220
+press start 5
+# Stage 2: Wait on Title Screen, press Start to enter Menu / Club Selection
+wait 120
+press start 5
+# Stage 3: Wait for Menu to settle
+wait 120
+quit

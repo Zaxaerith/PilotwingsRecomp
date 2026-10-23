@@ -1,0 +1,138 @@
+turbo on
+# Pilotwings extended flight test to frame 3600
+wait 220
+press start 5
+
+wait 120
+press start 5
+
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 120
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 150
+press a 120
+
+wait 60
+press start 10
+wait 60
+press start 10
+
+# Audio & asset upload
+wait 450
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+press a 5
+wait 15
+press start 5
+wait 15
+
+# Runway cleared - full throttle
+dump flight_cleared
+press a 180
+dump flight_rolling
+wait 30
+
+# Pull back stick to take off
+press a+down 90
+dump flight_airborne
+wait 30
+
+# Bank right
+press a+right 90
+dump flight_banking
+wait 60
+
+dump flight_final
+quit

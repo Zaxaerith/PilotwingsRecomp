@@ -1,0 +1,16 @@
+# Script to test advancing past password prompt
+wait 220
+press start 5
+wait 120
+press start 5
+wait 200
+# Frame 545: Press A to confirm NO password
+press a 5
+wait 60
+# Frame 610: Press A again
+press a 5
+wait 60
+# Frame 675: Press start
+press start 5
+wait 120
+quit

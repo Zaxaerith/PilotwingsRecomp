@@ -1,0 +1,66 @@
+# Extend to test un-fading into flight scene
+wait 220
+press start 5
+
+wait 120
+press start 5
+
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 120
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 150
+# Advances curriculum
+press a 120
+
+# Now on NOSE DOWN / NOSE UP screen
+wait 60
+press start 10
+wait 60
+press start 10
+
+# Now at frame ~2200 (loading flight scene)
+wait 120
+
+# Flight scene loaded -> Start flight!
+press start 10
+wait 60
+press a 10
+wait 60
+# Accelerate down runway
+press a 180
+wait 60
+quit

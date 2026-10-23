@@ -1,0 +1,62 @@
+# Turbo trace probe for Pilotwings flight scene entry
+turbo on
+
+wait 220
+press start 5
+
+wait 120
+press start 5
+
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 120
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 150
+press a 120
+
+wait 60
+press start 10
+wait 60
+press start 10
+
+# Now at frame ~2200, flight engine loading
+wait 200
+
+# Dump state at frame 2400
+dump flight_f2400
+
+wait 100
+quit

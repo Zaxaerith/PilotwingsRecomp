@@ -1,0 +1,86 @@
+turbo on
+# Pilotwings verified flight test with full speech completion
+wait 220
+press start 5
+
+wait 120
+press start 5
+
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 120
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 150
+press a 120
+
+wait 60
+press start 10
+wait 60
+press start 10
+
+# Audio & asset upload (~2250 to 2600)
+wait 450
+
+# Allow full typewriter speech to finish (1000 frames = ~16 seconds)
+wait 1000
+dump flight_speech_done
+
+# Advance page 1
+press a 15
+wait 120
+dump flight_page2
+
+# Advance page 2
+press a 15
+wait 120
+dump flight_page3
+
+# Jump / Takeoff!
+press a 15
+wait 60
+dump flight_action_started
+
+# Steer / Flight input (Down + A)
+press a+down 120
+dump flight_steer_down
+
+# Bank / Steer right
+press a+right 120
+dump flight_steer_right
+
+wait 60
+dump flight_complete
+quit

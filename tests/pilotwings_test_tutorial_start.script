@@ -1,0 +1,56 @@
+# Extend test_advance_tutorial to press START on the tutorial screen
+wait 220
+press start 5
+
+wait 120
+press start 5
+
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 120
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 150
+# Advances curriculum to NOSE DOWN / NOSE UP
+press a 120
+
+# Now on NOSE DOWN / NOSE UP screen (around frame 1950-2000)
+wait 60
+# Press START to begin flight!
+press start 10
+wait 60
+press start 10
+wait 180
+quit

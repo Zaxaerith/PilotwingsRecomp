@@ -1,0 +1,31 @@
+# Script to test buttons on Event Select screen
+wait 220
+press start 5
+wait 120
+press start 5
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+# At this point (~frame 1150), we are on Event Select screen
+# Test B
+wait 60
+press b 5
+wait 60
+# Test Start
+press start 5
+wait 60
+# Test A
+press a 5
+wait 120
+quit

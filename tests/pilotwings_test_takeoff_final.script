@@ -1,0 +1,93 @@
+turbo on
+# Pilotwings Flight Takeoff & Air Maneuver Test
+# Phase 1: Boot to Title
+wait 220
+press start 5
+
+# Phase 2: Title to Password Prompt
+wait 120
+press start 5
+
+# Phase 3: Password -> "NO"
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+# Phase 4: Lesson 1 Briefing (Tony)
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+# Phase 5: Event Select -> "LIGHT PLANE"
+wait 60
+press b 5
+wait 60
+press start 5
+
+# Phase 6: Controls screen 1
+wait 120
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+# Phase 7: Controls screen 2 (NOSE DOWN / NOSE UP)
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 150
+press a 120
+
+wait 60
+press start 10
+wait 60
+press start 10
+
+# Audio & 3D Flight Scene un-fade (~2250 to 2700)
+wait 450
+
+# Wait for Tony's typewriter briefing speech to complete
+wait 650
+dump flight_01_briefing
+
+# Press START ONCE to dismiss Tony's briefing and enter flight control!
+press start 5
+wait 40
+dump flight_02_runway_cleared
+
+# FULL THROTTLE down the runway (Phase 1 acceleration)
+press a 120
+dump flight_03_rolling_fast
+
+# FULL THROTTLE down the runway (Phase 2 takeoff speed)
+press a 120
+dump flight_04_takeoff_speed
+
+# PULL BACK STICK (Down + A) to lift off and climb into the sky!
+press a+down 120
+dump flight_05_airborne_climb
+
+# BANK RIGHT (Right + A) to turn plane in mid-air!
+press a+right 120
+dump flight_06_bank_right
+
+# Fly level
+press a 60
+dump flight_07_level_flight
+
+quit

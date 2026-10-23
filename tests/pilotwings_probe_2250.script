@@ -1,0 +1,60 @@
+turbo on
+
+wait 220
+press start 5
+
+wait 120
+press start 5
+
+wait 1000
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 1000
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 120
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 150
+press a 120
+
+wait 60
+press start 10
+wait 60
+press start 10
+
+# At frame ~2200. Now run 60 frames to frame 2260.
+wait 60
+
+dump flight_f2260
+
+wait 100
+quit

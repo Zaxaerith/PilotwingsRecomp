@@ -1,0 +1,53 @@
+# Advance past flight controls tutorial into 3D flight scene
+wait 220
+press start 5
+
+wait 120
+press start 5
+
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 120
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+# Flight scene loading and execution
+wait 150
+press a 120
+wait 30
+press a+down 60
+wait 30
+press a+right 60
+wait 60
+quit

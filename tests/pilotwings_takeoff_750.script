@@ -1,0 +1,79 @@
+turbo on
+# Pilotwings Takeoff & In-Flight Control Verification Script (wait 750)
+wait 220
+press start 5
+wait 120
+press start 5
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+wait 120
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+wait 150
+press a 120
+wait 60
+press start 10
+wait 60
+press start 10
+
+# Audio & 3D Flight Scene un-fade (~2250 to 2700)
+wait 450
+
+# Wait for Page 1 typewriter speech to finish (~frame 3400)
+wait 700
+dump flight_00_p1_done
+
+# Press START to advance to Page 2!
+press start 5
+wait 60
+
+# Wait 750 frames (enough for Page 2 speech timer to fully expire!)
+wait 750
+dump flight_01_cockpit_open
+
+# FULL THROTTLE down the runway (Phase 1 acceleration: 120 frames)
+press a 120
+dump flight_02_rolling_fast
+
+# FULL THROTTLE down the runway (Phase 2 takeoff speed: 120 frames)
+press a 120
+dump flight_03_takeoff_speed
+
+# PULL BACK STICK (Down + A for 120 frames) to lift off and climb into the sky!
+press a+down 120
+dump flight_04_airborne_climbing
+
+# BANK RIGHT (Right + A for 120 frames) to turn plane in mid-air!
+press a+right 120
+dump flight_05_banking_right
+
+wait 60
+dump flight_06_in_flight
+quit

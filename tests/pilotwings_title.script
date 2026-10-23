@@ -1,0 +1,6 @@
+# Pilotwings Title Navigation Script
+# Stage 1: Boot through intro, press Start to enter title screen
+wait 220
+press start 5
+wait 120
+quit

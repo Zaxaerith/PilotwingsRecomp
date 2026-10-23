@@ -1,0 +1,80 @@
+# Complete Pilotwings takeoff flight script extending verified advance tutorial sequence
+# Phase 1: Boot to title
+wait 220
+press start 5
+
+# Phase 2: Title to password prompt
+wait 120
+press start 5
+
+# Phase 3: Password prompt -> confirm "NO"
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+# Phase 4: Lesson 1 Briefing (Tony)
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+# Phase 5: Event Select -> Select "LIGHT PLANE" with B, then confirm with START
+wait 60
+press b 5
+wait 60
+press start 5
+
+# Phase 6: Flight Curriculum / Controls screen 1
+wait 120
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+# Phase 7: Transition to NOSE DOWN / NOSE UP screen
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+# At frame 1730, last button pressed. NOSE DOWN / NOSE UP fades in at ~1960.
+# Wait for NOSE DOWN / NOSE UP to appear and stabilize (~frame 2020)
+wait 280
+
+# Phase 8: Advance past NOSE DOWN / NOSE UP into the 3D Flight Scene!
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press a 5
+
+# Phase 9: 3D Flight Scene (Runway & Flight)
+wait 180
+
+# Full throttle (A button) down the runway
+press a 180
+wait 30
+
+# Pull back stick (DOWN) while holding throttle to take off
+press a+down 90
+wait 30
+
+# Bank right in mid-air
+press a+right 90
+wait 60
+
+quit

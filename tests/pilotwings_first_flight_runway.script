@@ -1,0 +1,58 @@
+# Complete flight test script: from boot to takeoff and steering in 3D flight scene
+# 1. Boot to title
+wait 220
+press start 5
+
+# 2. Title to club registration / password prompt
+wait 120
+press start 5
+
+# 3. Password prompt -> confirm "NO"
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+# 4. Lesson 1 Briefing (Tony)
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+# 5. Event Select -> Select "LIGHT PLANE" with B, then confirm with START
+wait 60
+press b 5
+wait 60
+press start 5
+
+# 6. Flight Curriculum / Controls screen -> Start Flight
+wait 120
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+# 7. Runway / Takeoff: 3D Flight Scene
+# Wait for 3D flight scene to initialize
+wait 120
+
+# Full throttle down the runway
+press a 120
+wait 30
+
+# Pull back stick (DOWN) to take off
+press a+down 90
+wait 30
+
+# Bank right in mid-air
+press a+right 90
+wait 60
+
+quit

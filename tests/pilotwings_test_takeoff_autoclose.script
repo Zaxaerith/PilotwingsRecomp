@@ -1,0 +1,91 @@
+turbo on
+# Pilotwings Takeoff & Playable Flight Test (Auto-close Page 2)
+# Phase 1: Boot to Title
+wait 220
+press start 5
+
+# Phase 2: Title to Password Prompt
+wait 120
+press start 5
+
+# Phase 3: Password -> "NO"
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+# Phase 4: Lesson 1 Briefing (Tony)
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+# Phase 5: Event Select -> "LIGHT PLANE"
+wait 60
+press b 5
+wait 60
+press start 5
+
+# Phase 6: Controls screen 1
+wait 120
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+# Phase 7: Controls screen 2 (NOSE DOWN / NOSE UP)
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 150
+press a 120
+
+wait 60
+press start 10
+wait 60
+press start 10
+
+# Audio & 3D Flight Scene un-fade (~2250 to 2700)
+wait 450
+
+# Wait for Page 1 typewriter speech to finish
+wait 700
+dump flight_p1_done
+
+# Press START ONCE to advance to Page 2!
+press start 5
+wait 60
+dump flight_p2_started
+
+# Wait 500 frames for Page 2 speech to finish and dialog box to auto-close
+wait 500
+dump flight_cockpit_open
+
+# FULL THROTTLE (A button) down the runway!
+press a 180
+dump flight_rolling_down_runway
+
+# PULL BACK STICK (Down + A) to lift off and climb!
+press a+down 120
+dump flight_airborne_climb
+
+# BANK RIGHT (Right + A) to turn plane!
+press a+right 120
+dump flight_bank_right
+
+wait 60
+dump flight_cruising
+quit

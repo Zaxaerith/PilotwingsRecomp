@@ -1,0 +1,7 @@
+# Script to reach fully typed menu and observe cursor/options
+wait 220
+press start 5
+wait 120
+press start 5
+wait 250
+quit

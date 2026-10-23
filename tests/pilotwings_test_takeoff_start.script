@@ -1,0 +1,96 @@
+turbo on
+# Pilotwings Takeoff & Playable Flight Test (Two-page briefing dismissal)
+# Phase 1: Boot to Title
+wait 220
+press start 5
+
+# Phase 2: Title to Password Prompt
+wait 120
+press start 5
+
+# Phase 3: Password -> "NO"
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+# Phase 4: Lesson 1 Briefing (Tony)
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+
+# Phase 5: Event Select -> "LIGHT PLANE"
+wait 60
+press b 5
+wait 60
+press start 5
+
+# Phase 6: Controls screen 1
+wait 120
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+# Phase 7: Controls screen 2 (NOSE DOWN / NOSE UP)
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+
+wait 150
+press a 120
+
+wait 60
+press start 10
+wait 60
+press start 10
+
+# Audio & 3D Flight Scene un-fade (~2250 to 2700)
+wait 450
+
+# Wait for Page 1 typewriter speech to finish
+wait 700
+dump flight_p1_done
+
+# Press START to advance to Page 2!
+press start 5
+wait 60
+dump flight_p2_started
+
+# Wait for Page 2 typewriter speech to finish
+wait 400
+dump flight_p2_done
+
+# Press START to dismiss Tony's flight briefing completely!
+press start 5
+wait 60
+dump flight_03_cockpit_ready
+
+# Full throttle down the runway (hold A for 180 frames)
+press a 180
+dump flight_04_rolling_fast
+
+# Pull back stick (Down + A for 120 frames) to lift off and climb into sky
+press a+down 120
+dump flight_05_airborne_climbing
+
+# Bank right with right aileron (Right + A for 120 frames)
+press a+right 120
+dump flight_06_banking_right
+
+wait 60
+dump flight_07_in_flight
+quit

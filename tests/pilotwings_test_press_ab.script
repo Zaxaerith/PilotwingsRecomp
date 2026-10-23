@@ -1,0 +1,72 @@
+turbo on
+# Test what advances Page 2 of Tony's flight briefing
+wait 220
+press start 5
+wait 120
+press start 5
+wait 200
+press a 5
+wait 60
+press a 5
+wait 60
+press start 5
+wait 200
+press a 5
+wait 60
+press start 5
+wait 60
+press a 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+wait 120
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+wait 60
+press b 5
+wait 60
+press start 5
+wait 150
+press a 120
+wait 60
+press start 10
+wait 60
+press start 10
+
+# Audio & un-fade
+wait 450
+
+# Page 1 typewriter
+wait 700
+dump p1_done
+
+# Dismiss Page 1 with START
+press start 5
+wait 60
+dump p2_started
+
+# Wait for Page 2 typewriter
+wait 400
+dump p2_cursor_blinking
+
+# Try pressing A
+press a 10
+wait 60
+dump after_press_a
+
+# Try pressing B
+press b 10
+wait 60
+dump after_press_b
+
+quit
