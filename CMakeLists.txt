@@ -3,6 +3,10 @@ project(PilotwingsSNESRecomp C CXX)
 
 set(CMAKE_C_STANDARD 11)
 
+# Force SDL2 backend for both snesrecomp and recomp-ui
+set(SNESRECOMP_SDL_BACKEND "SDL2" CACHE STRING "Desktop SDL backend (SDL3 or SDL2)" FORCE)
+set(RECOMP_UI_SDL3 OFF CACHE BOOL "Build recomp-ui against SDL3 instead of SDL2" FORCE)
+
 # Release pin for lobby matching. Release builds stamp the VERSION file so two
 # peers can prove they are the same build; everything else stamps "dev".
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" _GAME_VER_RAW)
@@ -114,12 +118,16 @@ snesrecomp_target_desktop_host(PilotwingsSNESRecomp)
 # opens on that dump rather than asking for one.
 snesrecomp_target_rom_cache(PilotwingsSNESRecomp)
 
-# No GUI launcher: this project was scaffolded with --no-recomp-ui.
-# Add the submodule and re-run this block to get one:
-#   git submodule add https://github.com/mstan/recomp-ui.git recomp-ui
-#   set(RECOMP_UI_ROOT "${CMAKE_SOURCE_DIR}/recomp-ui" CACHE PATH "" FORCE)
-#   include(${RECOMP_UI_ROOT}/recomp_ui.cmake)
-#   recomp_target_launcher_ui(PilotwingsSNESRecomp CONSOLE snes)
+# recomp-ui native GUI launcher integration
+set(RECOMP_UI_ROOT "${CMAKE_SOURCE_DIR}/recomp-ui" CACHE PATH
+    "Root directory of the recomp-ui launcher repo" FORCE)
+if(NOT EXISTS "${RECOMP_UI_ROOT}/recomp_ui.cmake")
+    message(FATAL_ERROR
+        "recomp-ui missing at ${RECOMP_UI_ROOT}.\n"
+        "Run: git submodule update --init --recursive recomp-ui")
+endif()
+include(${RECOMP_UI_ROOT}/recomp_ui.cmake)
+recomp_target_launcher_ui(PilotwingsSNESRecomp CONSOLE snes)
 
 # Netplay is not built into this target.
 # No multitap: two seats, one controller per port.

@@ -43,18 +43,25 @@
 #endif
 
 static const SnesDesktopHostGame kGameHost = {
-    .display_name        = "Pilotwings",
-    .window_title        = "Pilotwings",
-    .region              = SNESRECOMP_ROM_REGION,
-    .rom_file            = SNESRECOMP_ROM_FILE,
-    .expected_sha256_hex = SNESRECOMP_ROM_EXPECTED_SHA256,
-    .expected_crc32_hex  = SNESRECOMP_ROM_EXPECTED_CRC32,
-    .game_id             = SNESRECOMP_ROM_GAME_ID,
-    .build_version       = SNES_GAME_VERSION,
-    .game_info           = &kGameInfo,
-    .num_players         = 1,
+    .display_name             = "Pilotwings",
+    .window_title             = "Pilotwings",
+    .launcher_title           = "Pilotwings — Launcher",
+    .region                   = SNESRECOMP_ROM_REGION,
+    .rom_file                 = SNESRECOMP_ROM_FILE,
+    .expected_sha256_hex      = SNESRECOMP_ROM_EXPECTED_SHA256,
+    .expected_crc32_hex       = SNESRECOMP_ROM_EXPECTED_CRC32,
+    .game_id                  = SNESRECOMP_ROM_GAME_ID,
+    .build_version            = SNES_GAME_VERSION,
+    .game_info                = &kGameInfo,
+    .num_players              = 1,
     /* Pilotwings uses a 16-character password system rather than battery-backed SRAM. */
-    .sram_path           = NULL,
+    .sram_path                = NULL,
+    .display_aspect_supported = 1,
+    .shader_supported         = 1,
+    .rewind_settings          = 1,
+    .state_menu_hotkeys       = 1,
+    .in_game_launcher         = 1,
+    .rom_help                 = "Requires an unmodified retail ROM of Pilotwings (USA) (512 KB, .sfc).",
 };
 
 #ifdef _WIN32
