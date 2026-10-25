@@ -41,6 +41,22 @@ if(NOT EXISTS "${SNESRECOMP_ROOT}/runner/runner.cmake")
         "snesrecomp missing at ${SNESRECOMP_ROOT}.\n"
         "Run: git submodule update --init --recursive or pass -DSNESRECOMP_ROOT=<path>")
 endif()
+
+# Guard against unpatched snesrecomp. Pilotwings requires SHVC-1B0N PCB mapping
+# and 3D flight library HLE commands. Without these, the game hangs on takeoff.
+if(EXISTS "${SNESRECOMP_ROOT}/runner/src/snes/dsp1_hle.h")
+    file(READ "${SNESRECOMP_ROOT}/runner/src/snes/dsp1_hle.h" _DSP1_HLE_HEADER)
+    if(NOT _DSP1_HLE_HEADER MATCHES "matrix\\[3\\]\\[3\\]\\[3\\]")
+        message(FATAL_ERROR
+            "snesrecomp at ${SNESRECOMP_ROOT} lacks required Pilotwings DSP-1 patches.\n"
+            "Without these patches, flight Mode 7 hangs at frame 2246 on takeoff.\n"
+            "To apply the patches automatically, run:\n"
+            "  powershell -ExecutionPolicy Bypass -File tools/setup_snesrecomp.ps1\n"
+            "or on Linux/macOS:\n"
+            "  bash tools/setup_snesrecomp.sh\n"
+            "For full details, see patches/snesrecomp/README.md")
+    endif()
+endif()
 # Mod packages are part of every project, not an option. The launcher's Mods
 # page, the .snesmod loader, the trusted-plugin registry and netplay's mod-set
 # gate all hang off this one switch; a build without it cannot exchange mods

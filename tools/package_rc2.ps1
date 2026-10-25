@@ -30,17 +30,37 @@ Copy-Item $exeSrc -Destination (Join-Path $stageDir "PilotwingsSNESRecomp.exe") 
 # 2. Runtime DLLs
 $sdl2Src = Join-Path $buildRelease "SDL2.dll"
 if (-not (Test-Path $sdl2Src)) {
-    $sdl2Src = "D:\Project\GameRecomp\_sdl2\SDL2-2.32.8\x86_64-w64-mingw32\bin\SDL2.dll"
+    $sdl2Search = @(
+        $env:SDL2_DIR ? (Join-Path $env:SDL2_DIR "bin\SDL2.dll") : $null,
+        (Join-Path $repoRoot "SDL2.dll"),
+        (Get-ChildItem -Path (Join-Path $repoRoot "..\_sdl2") -Filter "SDL2.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName)
+    ) | Where-Object { $_ -and (Test-Path $_) }
+
+    if ($sdl2Search.Count -gt 0) {
+        $sdl2Src = $sdl2Search[0]
+    } else {
+        $found = (Get-Command "SDL2.dll" -ErrorAction SilentlyContinue)
+        if ($found) { $sdl2Src = $found.Source }
+        else { throw "SDL2.dll not found. Please place SDL2.dll in build-rc2 or set SDL2_DIR." }
+    }
 }
 Copy-Item $sdl2Src -Destination (Join-Path $stageDir "SDL2.dll") -Force
 
+$gccCmd = Get-Command "gcc.exe" -ErrorAction SilentlyContinue
+$mingwBin = if ($gccCmd) { Split-Path $gccCmd.Source } elseif (Test-Path "C:\MYAPPLY\mingw64\bin") { "C:\MYAPPLY\mingw64\bin" } else { "" }
+
 $mingwDlls = @("libgcc_s_seh-1.dll", "libstdc++-6.dll", "libwinpthread-1.dll")
 foreach ($dll in $mingwDlls) {
-    $dllSrc = Join-Path "C:\MYAPPLY\mingw64\bin" $dll
-    if (Test-Path $dllSrc) {
+    $dllSrc = if ($mingwBin) { Join-Path $mingwBin $dll } else { $null }
+    if ($dllSrc -and (Test-Path $dllSrc)) {
         Copy-Item $dllSrc -Destination (Join-Path $stageDir $dll) -Force
     } else {
-        throw "MinGW DLL not found: $dllSrc"
+        $found = (Get-Command $dll -ErrorAction SilentlyContinue)
+        if ($found) {
+            Copy-Item $found.Source -Destination (Join-Path $stageDir $dll) -Force
+        } else {
+            throw "MinGW DLL not found: $dll"
+        }
     }
 }
 

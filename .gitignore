@@ -27,9 +27,6 @@
 
 .DS_Store
 
-# Isolated framework worktree
-/snesrecomp/
-
 # Binaries and runtime diagnostics
 SDL2.dll
 /diagnostics/

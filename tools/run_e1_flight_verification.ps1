@@ -1,4 +1,4 @@
-Add-Type -AssemblyName System.Drawing, System.Windows.Forms
+﻿Add-Type -AssemblyName System.Drawing, System.Windows.Forms
 Add-Type @"
 using System;
 using System.Diagnostics;
@@ -117,9 +117,9 @@ function CaptureWindowNative([IntPtr]$hWnd, [string]$savePath) {
 
 $probeDir = Join-Path $env:LOCALAPPDATA "PilotwingsRunProbe"
 $exePath = Join-Path $probeDir "PilotwingsSNESRecomp.exe"
-$romPath = "D:\Project\GameRecomp\PilotwingsRecomp\Pilotwings (USA).sfc"
-$artifactDir = "C:\Users\KEPLER\.gemini\antigravity\brain\1f146d3d-74a4-40b0-8454-09f7e8be3fe8"
-$diagDir = "D:\Project\GameRecomp\PilotwingsRecomp\diagnostics"
+$romPath = "$PSScriptRoot\..\Pilotwings (USA).sfc"
+$artifactDir = "$PSScriptRoot\..\diagnostics\artifacts"
+$diagDir = "$PSScriptRoot\..\diagnostics"
 
 if (-not (Test-Path $diagDir)) { New-Item -ItemType Directory -Path $diagDir -Force | Out-Null }
 

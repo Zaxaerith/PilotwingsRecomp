@@ -1,4 +1,4 @@
-Add-Type @"
+﻿Add-Type @"
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -19,7 +19,7 @@ public class MemoryReader {
 
 $probeDir = Join-Path $env:LOCALAPPDATA "PilotwingsRunProbe"
 $exePath = Join-Path $probeDir "PilotwingsSNESRecomp.exe"
-$romPath = "D:\Project\GameRecomp\PilotwingsRecomp\Pilotwings (USA).sfc"
+$romPath = "$PSScriptRoot\..\Pilotwings (USA).sfc"
 
 $proc = Start-Process -FilePath $exePath -ArgumentList @("--no-launcher", "--rom", "`"$romPath`"") -WorkingDirectory $probeDir -PassThru
 Start-Sleep -Seconds 2

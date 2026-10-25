@@ -1,4 +1,4 @@
-Add-Type @"
+﻿Add-Type @"
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -123,7 +123,7 @@ public class WinInputHelper {
 
 $probeDir = Join-Path $env:LOCALAPPDATA "PilotwingsRunProbe"
 $exePath = Join-Path $probeDir "PilotwingsSNESRecomp.exe"
-$romPath = "D:\Project\GameRecomp\PilotwingsRecomp\Pilotwings (USA).sfc"
+$romPath = "$PSScriptRoot\..\Pilotwings (USA).sfc"
 
 Write-Host "=== Phase E1.1: Live Keyboard Input & Joypad Telemetry Verification ===" -ForegroundColor Cyan
 

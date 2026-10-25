@@ -1,0 +1,249 @@
+From 982299a91bf81bed14c7b44d697a63a9bca30c78 Mon Sep 17 00:00:00 2001
+From: Zaxaerith <Zaxaerith@users.noreply.github.com>
+Date: Fri, 23 Oct 2026 16:50:19 +0800
+Subject: [PATCH 1/2] feat(dsp1): add SHVC-1B0N LoROM PCB mapping support for
+ Pilotwings
+
+---
+ runner/src/snes/cart.c             | 13 ++++-
+ runner/src/snes/cart.h             | 40 ++++++++++---
+ tests/dsp1/CMakeLists.txt          |  2 +
+ tests/dsp1/dsp1_pcb_mapping_test.c | 94 ++++++++++++++++++++++++++++++
+ 4 files changed, 138 insertions(+), 11 deletions(-)
+ create mode 100644 tests/dsp1/dsp1_pcb_mapping_test.c
+
+diff --git a/runner/src/snes/cart.c b/runner/src/snes/cart.c
+index 2151b87..8e32b66 100644
+--- a/runner/src/snes/cart.c
++++ b/runner/src/snes/cart.c
+@@ -103,6 +103,10 @@ void cart_load(Cart* cart, int type, uint8_t* rom, int romSize, int ramSize) {
+     (void)cx4_load_firmware(cart->cx4, NULL);
+   }
+   if (type == CART_DSP1 || type == CART_DSP1_HIROM) {
++    if (type == CART_DSP1_HIROM)
++      cart->dsp1Pcb = DSP1_PCB_HIROM;
++    else
++      cart->dsp1Pcb = (ramSize > 0) ? DSP1_PCB_1K1X : DSP1_PCB_1B0N;
+     cart->dsp1 = dsp1_create();
+     (void)dsp1_load_firmware(cart->dsp1, NULL);
+   }
+@@ -135,6 +139,11 @@ void cart_note_cpu_bus(Cart *cart, uint8_t bank, uint16_t address) {
+     cart->cpuBusAddress = ((uint32_t)bank << 16) | address;
+ }
+ 
++void cart_set_dsp1_pcb(Cart *cart, uint8_t pcb) {
++  if (cart)
++    cart->dsp1Pcb = pcb;
++}
++
+ static uint64_t cart_master_clock(const Cart *cart) {
+   return cart && cart->masterClock ? *cart->masterClock : 0;
+ }
+@@ -250,7 +259,7 @@ uint8_t cart_read(Cart* cart, uint8_t bank, uint16_t adr) {
+     case CART_DSP1_HIROM:
+       cart_sync_coprocessors(cart, cart_master_clock(cart));
+       if (cart_is_dsp1_window(cart, bank, adr))
+-        return dsp1_read(cart->dsp1, cart_dsp1_register(adr));
++        return dsp1_read(cart->dsp1, cart_dsp1_register(cart, adr));
+       if (cart->ramSize > 0 && cart_is_dsp1_sram_window(cart, bank, adr))
+         return cart->ram[(adr & 0x1fff) & (cart->ramSize - 1)];
+       return cart->type == CART_DSP1_HIROM
+@@ -334,7 +343,7 @@ void cart_write(Cart* cart, uint8_t bank, uint16_t adr, uint8_t val) {
+     case CART_DSP1_HIROM:
+       cart_sync_coprocessors(cart, cart_master_clock(cart));
+       if (cart_is_dsp1_window(cart, bank, adr))
+-        dsp1_write(cart->dsp1, cart_dsp1_register(adr), val);
++        dsp1_write(cart->dsp1, cart_dsp1_register(cart, adr), val);
+       else if (cart->ramSize > 0 && cart_is_dsp1_sram_window(cart, bank, adr))
+         cart->ram[(adr & 0x1fff) & (cart->ramSize - 1)] = val;
+       else if (cart->type == CART_DSP1_HIROM)
+diff --git a/runner/src/snes/cart.h b/runner/src/snes/cart.h
+index 039668c..8e70c65 100644
+--- a/runner/src/snes/cart.h
++++ b/runner/src/snes/cart.h
+@@ -19,6 +19,7 @@ typedef struct Sdd1 Sdd1;
+ struct Cart {
+   Snes* snes;
+   uint8_t type;
++  uint8_t dsp1Pcb;
+ 
+   uint8_t* rom;
+   uint32_t romSize;
+@@ -78,24 +79,44 @@ static inline bool cart_is_superfx_ram_window(const Cart* cart, uint8_t bank,
+          (bank < 0x40 || (bank >= 0x80 && bank < 0xc0));
+ }
+ 
+-/* Super Mario Kart's SHVC-1K1X DSP-1 host port:
+- * banks $00-$1F / $80-$9F, addresses $6000-$7FFF, mirrored by mask $0FFF.
+- * The mapper removes the low 12 address bits: $6000-$6FFF selects DR and
+- * $7000-$7FFF selects SR. */
++/* DSP-1 board types.
++ * - SHVC-1K1X / 1B3B (Super Mario Kart): LoROM with battery SRAM.
++ *   DSP-1 host port is mapped to $00-$1F / $80-$9F, addresses $6000-$7FFF,
++ *   with bit 12 selecting data register ($6000) vs status register ($7000).
++ *   SRAM is mapped to $20-$3F / $A0-$BF, addresses $6000-$7FFF.
++ * - SHVC-1B0N / 2A0N (Pilotwings): LoROM without SRAM.
++ *   DSP-1 host port is mapped to $30-$3F / $B0-$BF, addresses $8000-$FFFF,
++ *   with bit 14 selecting data register ($8000-$BFFF) vs status register ($C000-$FFFF).
++ *   No SRAM.
++ * - HiROM DSP-1: mapped to $00-$1F / $80-$9F, addresses $6000-$7FFF.
++ */
++#define DSP1_PCB_1K1X   0
++#define DSP1_PCB_1B0N   1
++#define DSP1_PCB_HIROM  2
++
+ static inline bool cart_is_dsp1_window(const Cart* cart, uint8_t bank,
+                                        uint16_t adr) {
+-  return cart_has_dsp1(cart) && adr >= 0x6000 && adr < 0x8000 &&
+-         (bank < 0x20 || (bank >= 0x80 && bank < 0xa0));
++  if (!cart_has_dsp1(cart)) return false;
++  uint8_t canonical = bank & 0x7fu;
++  if (cart->dsp1Pcb == DSP1_PCB_1B0N) {
++    return (canonical >= 0x30 && canonical <= 0x3f) && (adr >= 0x8000);
++  }
++  return adr >= 0x6000 && adr < 0x8000 && canonical < 0x20;
+ }
+ 
+-static inline uint16_t cart_dsp1_register(uint16_t adr) {
++static inline uint16_t cart_dsp1_register(const Cart* cart, uint16_t adr) {
++  if (cart && cart->dsp1Pcb == DSP1_PCB_1B0N)
++    return (uint16_t)((adr >> 14) & 1u);
+   return (uint16_t)((adr >> 12) & 1u);
+ }
+ 
+-/* SHVC-1K1X battery SRAM is separate from the usual LoROM $70-$7D window. */
++/* SHVC-1K1X battery SRAM is separate from the usual LoROM $70-$7D window.
++ * 1B0N has no SRAM. */
+ static inline bool cart_is_dsp1_sram_window(const Cart* cart, uint8_t bank,
+                                             uint16_t adr) {
+-  return cart_has_dsp1(cart) && adr >= 0x6000 && adr < 0x8000 &&
++  if (!cart_has_dsp1(cart) || cart->dsp1Pcb == DSP1_PCB_1B0N || cart->ramSize == 0)
++    return false;
++  return adr >= 0x6000 && adr < 0x8000 &&
+          ((bank >= 0x20 && bank < 0x40) ||
+           (bank >= 0xa0 && bank < 0xc0));
+ }
+@@ -111,6 +132,7 @@ static inline bool cart_is_sdd1_window(const Cart* cart, uint8_t bank,
+ void cart_sync_coprocessors(Cart *cart, uint64_t master_clock);
+ void cart_set_master_clock_source(Cart *cart, const uint64_t *master_clock);
+ void cart_note_cpu_bus(Cart *cart, uint8_t bank, uint16_t address);
++void cart_set_dsp1_pcb(Cart *cart, uint8_t pcb);
+ 
+ // TODO: how to handle reset & load? (especially where to init ram)
+ 
+diff --git a/tests/dsp1/CMakeLists.txt b/tests/dsp1/CMakeLists.txt
+index f4d203c..2f35605 100644
+--- a/tests/dsp1/CMakeLists.txt
++++ b/tests/dsp1/CMakeLists.txt
+@@ -17,6 +17,8 @@ function(dsp1_test_target name)
+ endfunction()
+ 
+ set(_device ${_runner}/snes/dsp1.c ${_runner}/snes/dsp1_hle.c)
++dsp1_test_target(dsp1_pcb_mapping_test)
++add_test(NAME pcb_mapping COMMAND dsp1_pcb_mapping_test)
+ dsp1_test_target(snapshot_identity_test)
+ add_test(NAME snapshot_identity COMMAND snapshot_identity_test)
+ dsp1_test_target(dsp1_selection_test ${_device})
+diff --git a/tests/dsp1/dsp1_pcb_mapping_test.c b/tests/dsp1/dsp1_pcb_mapping_test.c
+new file mode 100644
+index 0000000..b05e53a
+--- /dev/null
++++ b/tests/dsp1/dsp1_pcb_mapping_test.c
+@@ -0,0 +1,94 @@
++#include <stdio.h>
++#include <string.h>
++#include <assert.h>
++#include "cart.h"
++
++static int fails = 0;
++
++static void test_check(int cond, const char *msg) {
++    if (!cond) {
++        fprintf(stderr, "FAIL: %s\n", msg);
++        fails++;
++    }
++}
++
++int main(void) {
++    Cart cart;
++    memset(&cart, 0, sizeof(cart));
++    cart.type = CART_DSP1;
++
++    /* -------------------------------------------------------------
++     * 1. Test Super Mario Kart PCB (SHVC-1K1X: LoROM with SRAM)
++     * ------------------------------------------------------------- */
++    cart.dsp1Pcb = DSP1_PCB_1K1X;
++    cart.ramSize = 2048;
++
++    /* DSP-1 window: $00-$1F and $80-$9F, $6000-$7FFF */
++    test_check(cart_is_dsp1_window(&cart, 0x00, 0x6000), "SMK: 00:6000 is DSP1");
++    test_check(cart_is_dsp1_window(&cart, 0x00, 0x7000), "SMK: 00:7000 is DSP1");
++    test_check(cart_is_dsp1_window(&cart, 0x1F, 0x7FFF), "SMK: 1F:7FFF is DSP1");
++    test_check(cart_is_dsp1_window(&cart, 0x80, 0x6000), "SMK: 80:6000 is DSP1");
++    test_check(cart_is_dsp1_window(&cart, 0x9F, 0x7FFF), "SMK: 9F:7FFF is DSP1");
++
++    /* Out of DSP-1 window for SMK */
++    test_check(!cart_is_dsp1_window(&cart, 0x00, 0x8000), "SMK: 00:8000 is not DSP1");
++    test_check(!cart_is_dsp1_window(&cart, 0x20, 0x6000), "SMK: 20:6000 is not DSP1");
++    test_check(!cart_is_dsp1_window(&cart, 0x3F, 0x8000), "SMK: 3F:8000 is not DSP1");
++    test_check(!cart_is_dsp1_window(&cart, 0x3F, 0xC000), "SMK: 3F:C000 is not DSP1");
++
++    /* Register decoding: bit 12 */
++    test_check(cart_dsp1_register(&cart, 0x6000) == 0, "SMK: 6000 is DR (0)");
++    test_check(cart_dsp1_register(&cart, 0x6FFF) == 0, "SMK: 6FFF is DR (0)");
++    test_check(cart_dsp1_register(&cart, 0x7000) == 1, "SMK: 7000 is SR (1)");
++    test_check(cart_dsp1_register(&cart, 0x7FFF) == 1, "SMK: 7FFF is SR (1)");
++
++    /* SRAM window: $20-$3F and $A0-$BF, $6000-$7FFF */
++    test_check(cart_is_dsp1_sram_window(&cart, 0x20, 0x6000), "SMK: 20:6000 is SRAM");
++    test_check(cart_is_dsp1_sram_window(&cart, 0x3F, 0x7FFF), "SMK: 3F:7FFF is SRAM");
++    test_check(cart_is_dsp1_sram_window(&cart, 0xA0, 0x6000), "SMK: A0:6000 is SRAM");
++    test_check(cart_is_dsp1_sram_window(&cart, 0xBF, 0x7FFF), "SMK: BF:7FFF is SRAM");
++    test_check(!cart_is_dsp1_sram_window(&cart, 0x00, 0x6000), "SMK: 00:6000 is not SRAM");
++
++    /* -------------------------------------------------------------
++     * 2. Test Pilotwings PCB (SHVC-1B0N: LoROM without SRAM)
++     * ------------------------------------------------------------- */
++    cart.dsp1Pcb = DSP1_PCB_1B0N;
++    cart.ramSize = 0;
++
++    /* DSP-1 window: $30-$3F and $B0-$BF, $8000-$FFFF */
++    test_check(cart_is_dsp1_window(&cart, 0x30, 0x8000), "Pilotwings: 30:8000 is DSP1");
++    test_check(cart_is_dsp1_window(&cart, 0x30, 0xC000), "Pilotwings: 30:C000 is DSP1");
++    test_check(cart_is_dsp1_window(&cart, 0x3F, 0x8000), "Pilotwings: 3F:8000 is DSP1");
++    test_check(cart_is_dsp1_window(&cart, 0x3F, 0xC000), "Pilotwings: 3F:C000 is DSP1");
++    test_check(cart_is_dsp1_window(&cart, 0x3F, 0xFFFF), "Pilotwings: 3F:FFFF is DSP1");
++    test_check(cart_is_dsp1_window(&cart, 0xB0, 0x8000), "Pilotwings: B0:8000 is DSP1");
++    test_check(cart_is_dsp1_window(&cart, 0xBF, 0xC000), "Pilotwings: BF:C000 is DSP1");
++    test_check(cart_is_dsp1_window(&cart, 0xBF, 0xFFFF), "Pilotwings: BF:FFFF is DSP1");
++
++    /* Out of DSP-1 window for Pilotwings */
++    test_check(!cart_is_dsp1_window(&cart, 0x30, 0x7FFF), "Pilotwings: 30:7FFF is not DSP1");
++    test_check(!cart_is_dsp1_window(&cart, 0x3F, 0x6000), "Pilotwings: 3F:6000 is not DSP1");
++    test_check(!cart_is_dsp1_window(&cart, 0x00, 0x8000), "Pilotwings: 00:8000 is not DSP1 (ROM)");
++    test_check(!cart_is_dsp1_window(&cart, 0x00, 0x6000), "Pilotwings: 00:6000 is not DSP1");
++    test_check(!cart_is_dsp1_window(&cart, 0x1F, 0x8000), "Pilotwings: 1F:8000 is not DSP1 (ROM)");
++    test_check(!cart_is_dsp1_window(&cart, 0x20, 0x8000), "Pilotwings: 20:8000 is not DSP1");
++
++    /* Register decoding: bit 14 */
++    test_check(cart_dsp1_register(&cart, 0x8000) == 0, "Pilotwings: 8000 is DR (0)");
++    test_check(cart_dsp1_register(&cart, 0xBFFF) == 0, "Pilotwings: BFFF is DR (0)");
++    test_check(cart_dsp1_register(&cart, 0xC000) == 1, "Pilotwings: C000 is SR (1)");
++    test_check(cart_dsp1_register(&cart, 0xC001) == 1, "Pilotwings: C001 is SR (1)");
++    test_check(cart_dsp1_register(&cart, 0xFFFF) == 1, "Pilotwings: FFFF is SR (1)");
++
++    /* No SRAM on 1B0N */
++    test_check(!cart_is_dsp1_sram_window(&cart, 0x20, 0x6000), "Pilotwings: no SRAM at 20:6000");
++    test_check(!cart_is_dsp1_sram_window(&cart, 0x3F, 0x6000), "Pilotwings: no SRAM at 3F:6000");
++
++    if (fails == 0) {
++        printf("dsp1_pcb_mapping_test: ALL TESTS PASSED\n");
++        return 0;
++    } else {
++        fprintf(stderr, "dsp1_pcb_mapping_test: %d TESTS FAILED\n", fails);
++        return 1;
++    }
++}
+-- 
+2.55.0.windows.5
+

@@ -1,0 +1,480 @@
+From 964cdc1ee89c471df980d01d199c335473251079 Mon Sep 17 00:00:00 2001
+From: Zaxaerith <Zaxaerith@users.noreply.github.com>
+Date: Fri, 23 Oct 2026 18:24:59 +0800
+Subject: [PATCH 2/2] feat(dsp1): implement Pilotwings command set, Zenith
+ clamping and raster unblock in HLE
+
+---
+ runner/src/snes/dsp1.c     |  51 ++++++-
+ runner/src/snes/dsp1_hle.c | 270 +++++++++++++++++++++++++++++++++++--
+ runner/src/snes/dsp1_hle.h |   3 +
+ 3 files changed, 311 insertions(+), 13 deletions(-)
+
+diff --git a/runner/src/snes/dsp1.c b/runner/src/snes/dsp1.c
+index a95d60b..3084cc6 100644
+--- a/runner/src/snes/dsp1.c
++++ b/runner/src/snes/dsp1.c
+@@ -519,9 +519,56 @@ static uint32_t dsp1_hle_command_cycles(const Dsp1 *d) {
+       return 503;
+     }
+     case 0x06:
++    case 0x16:
++    case 0x26:
++    case 0x36:
+       return dsp1_hle_project_cycles(d);
+     case 0x0a:
++    case 0x1a:
++    case 0x2a:
++    case 0x3a:
+       return 130;
++    case 0x0e:
++    case 0x1e:
++    case 0x2e:
++    case 0x3e:
++      return 228;
++    case 0x01:
++    case 0x05:
++    case 0x11:
++    case 0x15:
++    case 0x21:
++    case 0x25:
++    case 0x31:
++    case 0x35:
++      return 280;
++    case 0x0d:
++    case 0x09:
++    case 0x1d:
++    case 0x19:
++    case 0x2d:
++    case 0x29:
++    case 0x39:
++    case 0x3d:
++      return 160;
++    case 0x03:
++    case 0x13:
++    case 0x23:
++    case 0x33:
++      return 160;
++    case 0x0b:
++    case 0x1b:
++    case 0x2b:
++    case 0x3b:
++      return 90;
++    case 0x14:
++    case 0x34:
++      return 320;
++    case 0x07:
++    case 0x0f:
++    case 0x27:
++    case 0x2f:
++      return 60;
+     default:
+       return 2;
+   }
+@@ -542,7 +589,7 @@ static void dsp1_hle_fail(Dsp1 *d, uint8_t command) {
+ 
+ static int dsp1_hle_run_command(Dsp1 *d) {
+   uint8_t output_words = 0;
+-  if (d->hle.command == 0x02)
++  if ((d->hle.command & 0x0f) == 0x02)
+     memcpy(d->hle.timing_projection, d->hle.input,
+            sizeof(d->hle.timing_projection));
+   if (!dsp1_hle_execute_state(
+@@ -595,7 +642,7 @@ static void dsp1_hle_begin_command(Dsp1 *d, uint8_t command) {
+ }
+ 
+ static int dsp1_hle_finish_output(Dsp1 *d) {
+-  if (d->hle.command != 0x0a || d->hle.output_discarded) {
++  if ((d->hle.command & 0x0f) != 0x0a || d->hle.output_discarded) {
+     dsp1_hle_command_ready(d);
+     return 0;
+   }
+diff --git a/runner/src/snes/dsp1_hle.c b/runner/src/snes/dsp1_hle.c
+index 500f764..16e81c9 100644
+--- a/runner/src/snes/dsp1_hle.c
++++ b/runner/src/snes/dsp1_hle.c
+@@ -170,14 +170,78 @@ bool dsp1_hle_command_shape(uint8_t command, uint8_t *input_words,
+   uint8_t outputs;
+   switch (command) {
+     case 0x02:
++    case 0x12:
++    case 0x22:
++    case 0x32:
+       inputs = 7;
+       outputs = 4;
+       break;
+     case 0x0a:
++    case 0x1a:
++    case 0x2a:
++    case 0x3a:
+       inputs = 1;
+       outputs = 4;
+       break;
++    case 0x0e:
++    case 0x1e:
++    case 0x2e:
++    case 0x3e:
++      inputs = 2;
++      outputs = 2;
++      break;
++    case 0x01:
++    case 0x05:
++    case 0x11:
++    case 0x15:
++    case 0x21:
++    case 0x25:
++    case 0x31:
++    case 0x35:
++      inputs = 4;
++      outputs = 0;
++      break;
++    case 0x0d:
++    case 0x09:
++    case 0x1d:
++    case 0x19:
++    case 0x2d:
++    case 0x29:
++    case 0x39:
++    case 0x3d:
++      inputs = 3;
++      outputs = 3;
++      break;
++    case 0x03:
++    case 0x13:
++    case 0x23:
++    case 0x33:
++      inputs = 3;
++      outputs = 3;
++      break;
++    case 0x0b:
++    case 0x1b:
++    case 0x2b:
++    case 0x3b:
++      inputs = 3;
++      outputs = 1;
++      break;
++    case 0x14:
++    case 0x34:
++      inputs = 6;
++      outputs = 3;
++      break;
++    case 0x07:
++    case 0x0f:
++    case 0x27:
++    case 0x2f:
++      inputs = 1;
++      outputs = 1;
++      break;
+     case 0x06:
++    case 0x16:
++    case 0x26:
++    case 0x36:
+       inputs = 3;
+       outputs = 3;
+       break;
+@@ -191,10 +255,12 @@ bool dsp1_hle_command_shape(uint8_t command, uint8_t *input_words,
+       outputs = 1;
+       break;
+     case 0x10:
++    case 0x30:
+       inputs = 2;
+       outputs = 2;
+       break;
+     case 0x18:
++    case 0x38:
+       inputs = 4;
+       outputs = 1;
+       break;
+@@ -203,10 +269,12 @@ bool dsp1_hle_command_shape(uint8_t command, uint8_t *input_words,
+       outputs = 2;
+       break;
+     case 0x0c:
++    case 0x2c:
+       inputs = 3;
+       outputs = 2;
+       break;
+     case 0x04:
++    case 0x24:
+       inputs = 2;
+       outputs = 2;
+       break;
+@@ -235,14 +303,19 @@ bool dsp1_hle_execute_state(Dsp1HleState *state, uint8_t command,
+     return false;
+ 
+   switch (command) {
+-    case 0x02: {
++    case 0x02:
++    case 0x12:
++    case 0x22:
++    case 0x32: {
+       if (!state) return false;
+       state->projection_valid = false;
+-      if (input[6] < -0x3800 || input[6] > 0x3800) return false;
++      int16_t azs = input[6];
++      if (azs > 0x3800) azs = 0x3800;
++      else if (azs < -0x3800) azs = -0x3800;
+       state->sin_aas = dsp1_sin((uint16_t)input[5]);
+       state->cos_aas = dsp1_cos((uint16_t)input[5]);
+-      state->sin_azs = dsp1_sin((uint16_t)input[6]);
+-      state->cos_azs = dsp1_cos((uint16_t)input[6]);
++      state->sin_azs = dsp1_sin((uint16_t)azs);
++      state->cos_azs = dsp1_cos((uint16_t)azs);
+ 
+       state->nx =
+           q15_multiply(state->sin_azs, (int16_t)-(int32_t)state->sin_aas);
+@@ -296,12 +369,17 @@ bool dsp1_hle_execute_state(Dsp1HleState *state, uint8_t command,
+           truncate_coefficient((int16_t)-(int32_t)coefficient, exponent);
+       output[2] = center_x;
+       output[3] = center_y;
++      state->center_x = center_x;
++      state->center_y = center_y;
+       inverse(state->cos_azs, 0, &state->sec_azs_coefficient,
+               &state->sec_azs_exponent);
+       state->projection_valid = true;
+       break;
+     }
+-    case 0x06: {
++    case 0x06:
++    case 0x16:
++    case 0x26:
++    case 0x36: {
+       if (!state || !state->projection_valid) return false;
+       int16_t px, py, pz;
+       int16_t ex = 0, ey = 0, ez = 0;
+@@ -386,8 +464,18 @@ bool dsp1_hle_execute_state(Dsp1HleState *state, uint8_t command,
+                     denominator_exponent - 7));
+       break;
+     }
+-    case 0x0a: {
+-      if (!state || !state->projection_valid) return false;
++    case 0x0a:
++    case 0x1a:
++    case 0x2a:
++    case 0x3a: {
++      if (!state) return false;
++      if (!state->projection_valid) {
++        output[0] = 0;
++        output[1] = 0;
++        output[2] = 0;
++        output[3] = 0;
++        break;
++      }
+       int16_t denominator =
+           (int16_t)(q15_multiply(input[0], state->sin_azs) + state->v_offset);
+       int16_t coefficient;
+@@ -431,7 +519,8 @@ bool dsp1_hle_execute_state(Dsp1HleState *state, uint8_t command,
+       output[1] = (int16_t)(doubled >> 16);
+       break;
+     }
+-    case 0x04: {
++    case 0x04:
++    case 0x24: {
+       int32_t radius = input[1];
+       output[0] = (int16_t)(
+           (radius * (int32_t)dsp1_sin((uint16_t)input[0])) >> 15);
+@@ -439,7 +528,8 @@ bool dsp1_hle_execute_state(Dsp1HleState *state, uint8_t command,
+           (radius * (int32_t)dsp1_cos((uint16_t)input[0])) >> 15);
+       break;
+     }
+-    case 0x0c: {
++    case 0x0c:
++    case 0x2c: {
+       int32_t sine = dsp1_sin((uint16_t)input[0]);
+       int32_t cosine = dsp1_cos((uint16_t)input[0]);
+       output[0] = (int16_t)(((int32_t)input[2] * sine >> 15) +
+@@ -448,11 +538,13 @@ bool dsp1_hle_execute_state(Dsp1HleState *state, uint8_t command,
+                             ((int32_t)input[1] * sine >> 15));
+       break;
+     }
+-    case 0x10: {
++    case 0x10:
++    case 0x30: {
+       inverse(input[0], input[1], &output[0], &output[1]);
+       break;
+     }
+-    case 0x18: {
++    case 0x18:
++    case 0x38: {
+       int64_t range =
+           (int64_t)input[0] * input[0] + (int64_t)input[1] * input[1] +
+           (int64_t)input[2] * input[2] - (int64_t)input[3] * input[3];
+@@ -485,6 +577,162 @@ bool dsp1_hle_execute_state(Dsp1HleState *state, uint8_t command,
+       output[0] = (int16_t)(distance >> (exponent >> 1));
+       break;
+     }
++    case 0x0e:
++    case 0x1e:
++    case 0x2e:
++    case 0x3e: {
++      if (!state) return false;
++      int16_t denominator =
++          (int16_t)(q15_multiply(input[1], state->sin_azs) + state->v_offset);
++      int16_t coefficient;
++      int16_t exponent;
++      inverse(denominator, 8, &coefficient, &exponent);
++      exponent = (int16_t)(exponent + state->vplane_exponent);
++      int16_t scale =
++          q15_multiply(coefficient, state->vplane_coefficient);
++      int16_t vertical_exponent =
++          (int16_t)(exponent + state->sec_azs_exponent);
++
++      int16_t h = (int16_t)(input[0] << 8);
++      normalize(scale, &coefficient, &exponent);
++      coefficient = q15_multiply(truncate_coefficient(coefficient, exponent), h);
++      int16_t x = (int16_t)(state->center_x + q15_multiply(coefficient, state->cos_aas));
++      int16_t y = (int16_t)(state->center_y - q15_multiply(coefficient, state->sin_aas));
++
++      int16_t v = (int16_t)(input[1] << 8);
++      coefficient = q15_multiply(scale, state->sec_azs_coefficient);
++      normalize(coefficient, &coefficient, &vertical_exponent);
++      coefficient = q15_multiply(truncate_coefficient(coefficient, vertical_exponent), v);
++      x = (int16_t)(x + q15_multiply(coefficient, (int16_t)-(int32_t)state->sin_aas));
++      y = (int16_t)(y + q15_multiply(coefficient, state->cos_aas));
++
++      output[0] = x;
++      output[1] = y;
++      break;
++    }
++    case 0x01:
++    case 0x05:
++    case 0x11:
++    case 0x15:
++    case 0x21:
++    case 0x25:
++    case 0x31:
++    case 0x35: {
++      if (!state) return false;
++      int16_t sin_az = dsp1_sin((uint16_t)input[1]);
++      int16_t cos_az = dsp1_cos((uint16_t)input[1]);
++      int16_t sin_ay = dsp1_sin((uint16_t)input[2]);
++      int16_t cos_ay = dsp1_cos((uint16_t)input[2]);
++      int16_t sin_ax = dsp1_sin((uint16_t)input[3]);
++      int16_t cos_ax = dsp1_cos((uint16_t)input[3]);
++      int16_t m = (int16_t)(input[0] >> 1);
++
++      uint8_t midx = (uint8_t)((command >> 4) & 3u);
++      if (midx > 2) midx = 0;
++
++      state->matrix[midx][0][0] = q15_multiply(q15_multiply(m, cos_az), cos_ay);
++      state->matrix[midx][0][1] = (int16_t)-q15_multiply(q15_multiply(m, sin_az), cos_ay);
++      state->matrix[midx][0][2] = q15_multiply(m, sin_ay);
++
++      state->matrix[midx][1][0] = (int16_t)(q15_multiply(q15_multiply(m, sin_az), cos_ax) +
++                                            q15_multiply(q15_multiply(q15_multiply(m, cos_az), sin_ax), sin_ay));
++      state->matrix[midx][1][1] = (int16_t)(q15_multiply(q15_multiply(m, cos_az), cos_ax) -
++                                            q15_multiply(q15_multiply(q15_multiply(m, sin_az), sin_ax), sin_ay));
++      state->matrix[midx][1][2] = (int16_t)-q15_multiply(q15_multiply(m, sin_ax), cos_ay);
++
++      state->matrix[midx][2][0] = (int16_t)(q15_multiply(q15_multiply(m, sin_az), sin_ax) -
++                                            q15_multiply(q15_multiply(q15_multiply(m, cos_az), cos_ax), sin_ay));
++      state->matrix[midx][2][1] = (int16_t)(q15_multiply(q15_multiply(m, cos_az), sin_ax) +
++                                            q15_multiply(q15_multiply(q15_multiply(m, sin_az), cos_ax), sin_ay));
++      state->matrix[midx][2][2] = q15_multiply(q15_multiply(m, cos_ax), cos_ay);
++      break;
++    }
++    case 0x0d:
++    case 0x09:
++    case 0x1d:
++    case 0x19:
++    case 0x2d:
++    case 0x29:
++    case 0x39:
++    case 0x3d: {
++      if (!state) return false;
++      uint8_t midx = (uint8_t)((command >> 4) & 3u);
++      if (midx > 2) midx = 0;
++      output[0] = (int16_t)(q15_multiply(input[0], state->matrix[midx][0][0]) +
++                            q15_multiply(input[1], state->matrix[midx][0][1]) +
++                            q15_multiply(input[2], state->matrix[midx][0][2]));
++      output[1] = (int16_t)(q15_multiply(input[0], state->matrix[midx][1][0]) +
++                            q15_multiply(input[1], state->matrix[midx][1][1]) +
++                            q15_multiply(input[2], state->matrix[midx][1][2]));
++      output[2] = (int16_t)(q15_multiply(input[0], state->matrix[midx][2][0]) +
++                            q15_multiply(input[1], state->matrix[midx][2][1]) +
++                            q15_multiply(input[2], state->matrix[midx][2][2]));
++      break;
++    }
++    case 0x03:
++    case 0x13:
++    case 0x23:
++    case 0x33: {
++      if (!state) return false;
++      uint8_t midx = (uint8_t)((command >> 4) & 3u);
++      if (midx > 2) midx = 0;
++      output[0] = (int16_t)(q15_multiply(input[0], state->matrix[midx][0][0]) +
++                            q15_multiply(input[1], state->matrix[midx][1][0]) +
++                            q15_multiply(input[2], state->matrix[midx][2][0]));
++      output[1] = (int16_t)(q15_multiply(input[0], state->matrix[midx][0][1]) +
++                            q15_multiply(input[1], state->matrix[midx][1][1]) +
++                            q15_multiply(input[2], state->matrix[midx][2][1]));
++      output[2] = (int16_t)(q15_multiply(input[0], state->matrix[midx][0][2]) +
++                            q15_multiply(input[1], state->matrix[midx][1][2]) +
++                            q15_multiply(input[2], state->matrix[midx][2][2]));
++      break;
++    }
++    case 0x0b:
++    case 0x1b:
++    case 0x2b:
++    case 0x3b: {
++      if (!state) return false;
++      uint8_t midx = (uint8_t)((command >> 4) & 3u);
++      if (midx > 2) midx = 0;
++      output[0] = (int16_t)(((int32_t)input[0] * state->matrix[midx][0][0] +
++                             (int32_t)input[1] * state->matrix[midx][0][1] +
++                             (int32_t)input[2] * state->matrix[midx][0][2]) >> 15);
++      break;
++    }
++    case 0x14:
++    case 0x34: {
++      int16_t c_sec, e_sec, c, e;
++      inverse(dsp1_cos((uint16_t)input[1]), 0, &c_sec, &e_sec);
++
++      int32_t val_z = (int32_t)input[3] * dsp1_cos((uint16_t)input[2]) -
++                      (int32_t)input[4] * dsp1_sin((uint16_t)input[2]);
++      normalize_double(val_z, &c, &e);
++      e = (int16_t)(e_sec - e);
++      normalize(q15_multiply(c, c_sec), &c, &e);
++      output[0] = (int16_t)(input[0] + truncate_coefficient(c, e));
++
++      output[1] = (int16_t)(input[1] + q15_multiply(input[3], dsp1_sin((uint16_t)input[2])) +
++                                      q15_multiply(input[4], dsp1_cos((uint16_t)input[2])));
++
++      int32_t val_y = (int32_t)input[3] * dsp1_cos((uint16_t)input[2]) +
++                      (int32_t)input[4] * dsp1_sin((uint16_t)input[2]);
++      normalize_double(val_y, &c, &e);
++      e = (int16_t)(e_sec - e);
++      int16_t c_sin;
++      normalize(dsp1_sin((uint16_t)input[1]), &c_sin, &e);
++      int16_t c_tan = q15_multiply(c_sec, c_sin);
++      normalize((int16_t)-q15_multiply(c, c_tan), &c, &e);
++      output[2] = (int16_t)(input[2] + truncate_coefficient(c, e) + input[5]);
++      break;
++    }
++    case 0x07:
++    case 0x0f:
++      output[0] = 0x0000;
++      break;
++    case 0x27:
++    case 0x2f:
++      output[0] = 0x0100;
++      break;
+     case 0x80:
+       break;
+     default:
+diff --git a/runner/src/snes/dsp1_hle.h b/runner/src/snes/dsp1_hle.h
+index b68a375..84b7827 100644
+--- a/runner/src/snes/dsp1_hle.h
++++ b/runner/src/snes/dsp1_hle.h
+@@ -23,6 +23,9 @@ typedef struct Dsp1HleState {
+   int16_t v_offset;
+   int16_t sec_azs_coefficient;
+   int16_t sec_azs_exponent;
++  int16_t center_x;
++  int16_t center_y;
++  int16_t matrix[3][3][3];
+   bool projection_valid;
+ } Dsp1HleState;
+ 
+-- 
+2.55.0.windows.5
+

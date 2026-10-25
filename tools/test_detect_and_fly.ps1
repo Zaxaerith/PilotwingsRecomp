@@ -1,4 +1,4 @@
-Add-Type -AssemblyName System.Drawing, System.Windows.Forms
+﻿Add-Type -AssemblyName System.Drawing, System.Windows.Forms
 Add-Type @"
 using System;
 using System.Diagnostics;
@@ -117,8 +117,8 @@ function CaptureWindowNative([IntPtr]$hWnd, [string]$savePath) {
 
 $probeDir = Join-Path $env:LOCALAPPDATA "PilotwingsRunProbe"
 $exePath = Join-Path $probeDir "PilotwingsSNESRecomp.exe"
-$romPath = "D:\Project\GameRecomp\PilotwingsRecomp\Pilotwings (USA).sfc"
-$artifactDir = "C:\Users\KEPLER\.gemini\antigravity\brain\1f146d3d-74a4-40b0-8454-09f7e8be3fe8"
+$romPath = "$PSScriptRoot\..\Pilotwings (USA).sfc"
+$artifactDir = "$PSScriptRoot\..\diagnostics\artifacts"
 
 $VK_RETURN = 0x0D # Start
 $VK_X      = 0x58 # SNES A (Throttle)

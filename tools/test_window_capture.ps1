@@ -1,4 +1,4 @@
-Add-Type -AssemblyName System.Drawing, System.Windows.Forms
+﻿Add-Type -AssemblyName System.Drawing, System.Windows.Forms
 Add-Type @"
 using System;
 using System.Text;
@@ -65,7 +65,7 @@ public class WinCapPrint {
 
 $probeDir = Join-Path $env:LOCALAPPDATA "PilotwingsRunProbe"
 $exePath = Join-Path $probeDir "PilotwingsSNESRecomp.exe"
-$romPath = "D:\Project\GameRecomp\PilotwingsRecomp\Pilotwings (USA).sfc"
+$romPath = "$PSScriptRoot\..\Pilotwings (USA).sfc"
 
 $proc = Start-Process -FilePath $exePath -ArgumentList @("--no-launcher", "--rom", "`"$romPath`"") -WorkingDirectory $probeDir -PassThru
 Start-Sleep -Seconds 4
@@ -84,7 +84,7 @@ if ($w -gt 0 -and $h -gt 0) {
     $g.ReleaseHdc($hdc)
     $g.Dispose()
 
-    $outPath = "C:\Users\KEPLER\.gemini\antigravity\brain\1f146d3d-74a4-40b0-8454-09f7e8be3fe8\live_window_title_test.png"
+    $outPath = "$PSScriptRoot\..\diagnostics\artifacts\live_window_title_test.png"
     $bmp.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
     $bmp.Dispose()
     Write-Host "SUCCESS: Saved screenshot to: $outPath (${w}x${h})" -ForegroundColor Green

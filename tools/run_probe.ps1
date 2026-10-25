@@ -5,7 +5,7 @@
   Safely stages and executes PilotwingsSNESRecomp.exe outside the Low Integrity
   GameRecomp directory (into %LOCALAPPDATA%\PilotwingsRunProbe) to completely
   bypass the Windows 0xc0000142 (STATUS_DLL_INIT_FAILED) error caused by
-  the Low Mandatory Level label on D:\Project\GameRecomp.
+  the Low Mandatory Level label on restricted workspace directories.
 #>
 param(
     [switch]$NoLauncher = $true,
