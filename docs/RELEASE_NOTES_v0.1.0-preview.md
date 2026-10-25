@@ -41,7 +41,7 @@ This milestone port transforms the classic flight simulation title into a native
 
 | File / Component | SHA-256 Checksum | Size |
 |---|---|---|
-| **Release ZIP Archive** (`PilotwingsRecomp-windows-x64-v0.1.0-preview.zip`) | `4D09AD33780F7CC66C50F53FC4A0D187276F1AC87B83BC76102AED7DE5E1F286` | 5,260,535 bytes |
+| **Release ZIP Archive** (`PilotwingsRecomp-windows-x64-v0.1.0-preview.zip`) | `99BD0D271DB4BDBDCEFEA6142CF1AB7B55B5D00884548AD8B4F469A3B60DB918` | 5,260,535 bytes |
 | **Release Candidate 2 Archive** (`PilotwingsRecomp-windows-x64-v0.1.0-preview-rc2.zip`) | `D6D142A2AC34EC5CEBFDEFB61560204D61C73581146AAFD7F31F50FD413A729D` | 5,096,271 bytes |
 | **Main Executable** (`PilotwingsSNESRecomp.exe`) | `E3DF497092CA0D2EACA904C6C17EF917255D1069FDA484775E648D71BEB71115` | 4,205,568 bytes |
 | **Required ROM** (`Pilotwings (USA).sfc`, headerless) | `03d0127f5de3237e22ad00de0c20763274da7b71142dde693240ac96d10983a3` | 524,288 bytes |
